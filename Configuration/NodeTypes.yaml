@@ -21,13 +21,13 @@
             dimensionCombinationHash:
               type: category
               path: '__dimensionCombinationHash'
-        indexing: '${Flowpack.SearchPlugin.Suggestion.buildConfig(node.properties.title, node, 3)}'
+        indexing: '${Flowpack.SearchPlugin.Suggestion.buildConfig(q(node).property("title"), node, 3)}'
     '__completion':
       search:
         elasticSearchMapping:
           type: string
           analyzer: autocomplete
-        indexing: '${node.properties.title}'
+        indexing: "${String.stripTags(q(node).property('title'))}"
 
 'TYPO3.Neos.NodeTypes:Text':
   properties:
@@ -36,7 +36,7 @@
         elasticSearchMapping:
           type: string
           analyzer: autocomplete
-        indexing: '${node.properties.text}'
+        indexing: "${String.stripTags(q(node).property('text'))}"
 
 'TYPO3.Neos.NodeTypes:Headline':
   properties:
@@ -54,13 +54,13 @@
             dimensionCombinationHash:
               type: category
               path: '__dimensionCombinationHash'
-        indexing: '${Flowpack.SearchPlugin.Suggestion.buildConfig(node.properties.title, node, 1)}'
+        indexing: '${Flowpack.SearchPlugin.Suggestion.buildConfig(q(node).property("title"), node, 1)}'
     '__completion':
       search:
         elasticSearchMapping:
           type: string
           analyzer: autocomplete
-        indexing: '${node.properties.title}'
+        indexing: "${String.stripTags(q(node).property('title'))}"
 
 'TYPO3.Neos.NodeTypes:TextWithImage':
   properties:
@@ -69,4 +69,4 @@
         elasticSearchMapping:
           type: string
           analyzer: autocomplete
-        indexing: '${node.properties.text}'
+        indexing: "${String.stripTags(q(node).property('text'))}"
