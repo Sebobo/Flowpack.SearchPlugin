@@ -1,0 +1,2 @@
+FlowPackSearchPlugin_ElasticSearchQueryTemplateCache:
+  frontend: TYPO3\Flow\Cache\Frontend\VariableFrontend
