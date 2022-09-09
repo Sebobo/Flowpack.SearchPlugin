@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Flowpack\SearchPlugin\Controller;
 
@@ -26,12 +27,7 @@ class AjaxSearchController extends ActionController
      */
     protected $defaultViewObjectName = FusionView::class;
 
-    /**
-     * @param Node $node
-     *
-     * @return void
-     */
-    public function searchAction(Node $node)
+    public function searchAction(Node $node): void
     {
         /* @var FusionView $view */
         $view = $this->view;

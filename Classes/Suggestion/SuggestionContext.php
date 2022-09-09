@@ -64,10 +64,6 @@ class SuggestionContext implements SuggestionContextInterface
         return $this->getContextIdentifier();
     }
 
-    /**
-     * @param Node $node
-     * @return string
-     */
     protected function getSiteName(Node $node): string
     {
         $subgraph = $this->contentRepositoryRegistry->subgraphForNode($node);

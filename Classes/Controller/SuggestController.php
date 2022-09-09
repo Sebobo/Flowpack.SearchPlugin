@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Flowpack\SearchPlugin\Controller;
 
@@ -17,6 +18,7 @@ use Flowpack\ElasticSearch\ContentRepositoryAdaptor\ElasticSearchClient;
 use Flowpack\ElasticSearch\ContentRepositoryAdaptor\Exception\QueryBuildingException;
 use Flowpack\SearchPlugin\Suggestion\SuggestionContextInterface;
 use Flowpack\SearchPlugin\Utility\SearchTerm;
+use Neos\Cache\Exception as CacheException;
 use Neos\Cache\Frontend\VariableFrontend;
 use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
 use Neos\ContentRepository\Core\SharedModel\Node\NodeAddress;
@@ -25,6 +27,7 @@ use Neos\ContentRepositoryRegistry\ContentRepositoryRegistry;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Mvc\Controller\ActionController;
 use Neos\Flow\Mvc\View\JsonView;
+use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
 
 class SuggestController extends ActionController
 {
@@ -67,7 +70,7 @@ class SuggestController extends ActionController
     #[Flow\Inject()]
     protected ContentRepositoryRegistry $contentRepositoryRegistry;
 
-    public function initializeObject()
+    public function initializeObject(): void
     {
         if ($this->objectManager->isRegistered(ElasticSearchClient::class)) {
             $this->elasticSearchClient = $this->objectManager->get(ElasticSearchClient::class);
@@ -76,12 +79,7 @@ class SuggestController extends ActionController
     }
 
     /**
-     * @param string $term
-     * @param string $contextNode
-     * @param string $dimensionCombination
-     * @return void
-     * @throws QueryBuildingException
-     * @throws \Neos\Flow\Persistence\Exception\IllegalObjectTypeException
+     * @throws QueryBuildingException|IllegalObjectTypeException|CacheException
      */
     public function indexAction(string $term = '', string $contextNode = ''): void
     {
@@ -115,13 +113,7 @@ class SuggestController extends ActionController
     }
 
     /**
-     * @param string $term
-     * @param string $contextNode
-     * @param string|null $dimensionCombination
-     * @return string
-     * @throws QueryBuildingException
-     * @throws \Neos\Cache\Exception
-     * @throws \Neos\Flow\Persistence\Exception\IllegalObjectTypeException
+     * @throws QueryBuildingException|CacheException|IllegalObjectTypeException
      */
     protected function buildRequestForTerm(string $term, NodeAddress $contextNodeAddress): string
     {
@@ -198,9 +190,6 @@ class SuggestController extends ActionController
 
     /**
      * Extract autocomplete options
-     *
-     * @param array $response
-     * @return array
      */
     protected function extractCompletions(array $response): array
     {
@@ -211,9 +200,6 @@ class SuggestController extends ActionController
 
     /**
      * Extract suggestion options
-     *
-     * @param array $response
-     * @return array
      */
     protected function extractSuggestions(array $response): array
     {
