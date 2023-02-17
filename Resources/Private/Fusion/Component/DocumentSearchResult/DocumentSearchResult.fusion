@@ -3,7 +3,7 @@ prototype(Neos.Neos:DocumentSearchResult) < prototype(Neos.Fusion:Component) {
     highlight = ${Flowpack.SearchPlugin.Array.flatten(searchHit.highlight)}
     title = ${q(node).property('title')}
     description = ''
-    parents = ${Array.reverse(q(node).parents('[instanceof Neos.Neos:Document]').get())}
+    parents = ${Array.reverse(q(node).parents('[instanceof Neos.Neos:Document][_hiddenInIndex != true]').get())}
 
     renderer = afx`
         <Neos.Neos:NodeLink node={props.node}>{props.title}</Neos.Neos:NodeLink>
