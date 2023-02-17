@@ -6,7 +6,8 @@ prototype(Flowpack.SearchPlugin:Search) < prototype(Neos.Neos:ContentComponent) 
     searchQuery.@process {
         fulltext = ${value ? value.fulltext(request.arguments.search) : value}
         nodeType = ${value ? value.nodeType('Neos.Neos:Document') : value}
-        excludeHidden = ${value ? value.exclude('neos_hidden_in_index', true) : value}
+        // The `exclude` operation is only supported by the ElasticSearch adaptor
+        # excludeHidden = ${value ? value.exclude('neos_hidden_in_index', true) : value}
     }
 
     searchForm = Flowpack.SearchPlugin:Search.Form
