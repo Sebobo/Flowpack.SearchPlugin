@@ -6,7 +6,13 @@ prototype(Neos.Neos:DocumentSearchResult) < prototype(Neos.Fusion:Component) {
     parents = ${Array.reverse(q(node).parents('[instanceof Neos.Neos:Document][_hiddenInIndex != true]').get())}
 
     renderer = afx`
-        <Neos.Neos:NodeLink node={props.node}>{props.title}</Neos.Neos:NodeLink>
+        <h2>
+            <Neos.Neos:NodeLink node={props.node}>{props.title}</Neos.Neos:NodeLink>
+        </h2>
+
+        <summary @if.description={props.description}>
+            {props.description}
+        </summary>
 
         <p @if.highlight={props.highlight}>
             <Neos.Fusion:Loop items={props.highlight} itemName="fragment">
