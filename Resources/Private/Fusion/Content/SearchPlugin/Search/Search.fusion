@@ -11,7 +11,7 @@ prototype(Flowpack.SearchPlugin:Search) < prototype(Neos.Neos:ContentComponent) 
 
     searchForm = Flowpack.SearchPlugin:Search.Form
 
-    attributes = Neos.Fusion:Attributes {
+    attributes = Neos.Fusion:DataStructure {
         class = 'search-plugin'
     }
 
@@ -23,7 +23,7 @@ prototype(Flowpack.SearchPlugin:Search) < prototype(Neos.Neos:ContentComponent) 
     }
 
     renderer = Neos.Fusion:Template {
-        attributes = ${props.attributes}
+        attributes = ${Neos.Array.toHtmlAttributesString(props.attributes)}
         searchForm = ${props.searchForm}
         searchQuery = ${props.searchQuery}
         configuration = ${props.configuration}
@@ -43,7 +43,7 @@ prototype(Flowpack.SearchPlugin:Search) < prototype(Neos.Neos:ContentComponent) 
     @cache {
         mode = 'dynamic'
         entryIdentifier {
-            node = ${node}
+            node = ${Neos.Caching.entryIdentifierForNode(node)}
         }
         entryDiscriminator = ${request.arguments.search || request.arguments.page ? false : 'static'}
         context {

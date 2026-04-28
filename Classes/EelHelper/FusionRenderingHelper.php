@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Flowpack\SearchPlugin\EelHelper;
@@ -14,48 +15,23 @@ namespace Flowpack\SearchPlugin\EelHelper;
  */
 
 use Flowpack\SearchPlugin\Service\FusionRenderingService;
-use Neos\ContentRepository\Domain\Model\NodeInterface;
+use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
 use Neos\Eel\ProtectedContextAwareInterface;
 use Neos\Flow\Annotations as Flow;
-use Neos\Flow\Mvc\Exception\InvalidActionNameException;
-use Neos\Flow\Mvc\Exception\InvalidArgumentNameException;
-use Neos\Flow\Mvc\Exception\InvalidArgumentTypeException;
-use Neos\Flow\Mvc\Exception\InvalidControllerNameException;
-use Neos\Fusion\Exception as FusionException;
-use Neos\Neos\Domain\Exception as DomainException;
 
 class FusionRenderingHelper implements ProtectedContextAwareInterface
 {
-    /**
-     * @Flow\Inject
-     * @var FusionRenderingService
-     */
-    protected $fusionRenderingService;
+    #[Flow\Inject]
+    protected FusionRenderingService $fusionRenderingService;
 
-    /**
-     * @throws InvalidActionNameException
-     * @throws InvalidArgumentNameException
-     * @throws InvalidArgumentTypeException
-     * @throws InvalidControllerNameException
-     * @throws FusionException
-     * @throws DomainException
-     */
-    public function render(NodeInterface $node, string $fusionPath)
+    public function render(Node $node, string $fusionPath): string
     {
-        return $this->fusionRenderingService->render($node, $fusionPath);
-    }
-
-    /**
-     * @throws InvalidActionNameException
-     * @throws InvalidArgumentNameException
-     * @throws InvalidArgumentTypeException
-     * @throws InvalidControllerNameException
-     * @throws FusionException
-     * @throws DomainException
-     */
-    public function renderByIdentifier(string $nodeIdentifier, string $fusionPath, string $workspace = 'live', array $contextData = [])
-    {
-        return $this->fusionRenderingService->renderByIdentifier($nodeIdentifier, $fusionPath, $workspace, $contextData);
+        try {
+            return $this->fusionRenderingService->render($node, $fusionPath);
+        } catch (\Exception $e) {
+            // TODO: Should we log this error?
+            return '';
+        }
     }
 
     /**

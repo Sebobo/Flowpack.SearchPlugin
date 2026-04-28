@@ -22,8 +22,7 @@ prototype(Flowpack.SearchPlugin:Search.Form) < prototype(Neos.Fusion:Component) 
             format = 'json'
             absolute = true
             arguments = Neos.Fusion:DataStructure {
-                contextNodeIdentifier = ${props.node.identifier}
-                dimensionCombination = ${Json.stringify(props.node.context.dimensions)}
+                contextNode = ${Neos.Node.serializedNodeAddress(props.node)}
             }
         }
 
@@ -59,7 +58,7 @@ prototype(Flowpack.SearchPlugin:Search.Form) < prototype(Neos.Fusion:Component) 
         mode = 'dynamic'
         entryIdentifier {
             static = 'search-form'
-            documentNode = ${documentNode}
+            documentNode = ${Neos.Caching.entryIdentifierForNode(documentNode)}
         }
         entryDiscriminator = ${request.arguments.search || request.arguments.page ? false : 'static'}
         context {

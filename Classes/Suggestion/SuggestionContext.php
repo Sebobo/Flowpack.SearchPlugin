@@ -24,10 +24,7 @@ use Neos\Neos\Domain\SubtreeTagging\NeosSubtreeTag;
 
 class SuggestionContext implements SuggestionContextInterface
 {
-    /**
-     * @var array
-     */
-    protected $contextValues = [];
+    protected array $contextValues = [];
 
     #[Flow\Inject]
     protected ContentRepositoryRegistry $contentRepositoryRegistry;
@@ -75,6 +72,6 @@ class SuggestionContext implements SuggestionContextInterface
             )
         ));
 
-        return $siteNode->name->value;
+        return $siteNode?->name->value ?? '';
     }
 }
