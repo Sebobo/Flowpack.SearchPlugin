@@ -29,7 +29,6 @@ use Neos\Fusion\Core\FusionGlobals;
 use Neos\Fusion\Core\Runtime as FusionRuntime;
 use Neos\Fusion\Core\RuntimeFactory;
 use Neos\Fusion\Exception as FusionException;
-use Neos\Neos\Controller\CreateContentContextTrait;
 use Neos\Neos\Domain\Exception;
 use Neos\Neos\Domain\Model\Site;
 use Neos\Neos\Domain\Repository\SiteRepository;
@@ -39,7 +38,6 @@ use Psr\Log\LoggerInterface;
 
 class FusionRenderingService
 {
-    use CreateContentContextTrait;
 
     #[Flow\Inject]
     protected I18nService $i18nService;
