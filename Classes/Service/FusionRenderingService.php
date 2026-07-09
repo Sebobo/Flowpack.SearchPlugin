@@ -133,7 +133,7 @@ class FusionRenderingService
         try {
             $output = $fusionRuntime->render($fusionPath);
             $fusionRuntime->popContext();
-            return $output;
+            return $output ?? '';
         } catch (\Exception $exception) {
             $logMessage = $this->throwableStorage->logThrowable($exception);
             $this->logger->error($logMessage, LogEnvironment::fromMethodName(__METHOD__));
