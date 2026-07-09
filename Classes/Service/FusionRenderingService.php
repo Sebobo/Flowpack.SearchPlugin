@@ -14,26 +14,34 @@ namespace Flowpack\SearchPlugin\Service;
  * source code.
  */
 
+use GuzzleHttp\Psr7\ServerRequest;
+use Neos\ContentRepository\Core\ContentRepository;
 use Neos\ContentRepository\Core\Dimension\ContentDimensionId;
 use Neos\ContentRepository\Core\Feature\Security\Exception\AccessDenied;
 use Neos\ContentRepository\Core\Projection\ContentGraph\Filter\FindClosestNodeFilter;
 use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
+use Neos\ContentRepository\Core\SharedModel\ContentRepository\ContentRepositoryId;
 use Neos\ContentRepositoryRegistry\ContentRepositoryRegistry;
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\I18n\Exception\InvalidLocaleIdentifierException;
 use Neos\Flow\I18n\Locale;
 use Neos\Flow\I18n\Service as I18nService;
 use Neos\Flow\Log\ThrowableStorageInterface;
 use Neos\Flow\Log\Utility\LogEnvironment;
+use Neos\Flow\Mvc\ActionRequest;
 use Neos\Fusion\Core\FusionGlobals;
 use Neos\Fusion\Core\Runtime as FusionRuntime;
 use Neos\Fusion\Core\RuntimeFactory;
 use Neos\Fusion\Exception as FusionException;
 use Neos\Neos\Domain\Exception;
+use Neos\Neos\Domain\Model\Domain;
+use Neos\Neos\Domain\Model\RenderingMode;
 use Neos\Neos\Domain\Model\Site;
 use Neos\Neos\Domain\Repository\SiteRepository;
 use Neos\Neos\Domain\Service\FusionService;
 use Neos\Neos\Domain\Service\NodeTypeNameFactory;
+use Neos\Neos\FrontendRouting\SiteDetection\SiteDetectionResult;
 use Psr\Log\LoggerInterface;
 
 class FusionRenderingService
@@ -42,13 +50,19 @@ class FusionRenderingService
     #[Flow\Inject]
     protected I18nService $i18nService;
 
-    protected ?FusionRuntime $fusionRuntime = null;
+    /**
+     * @var array<string, FusionRuntime>
+     */
+    protected array $fusionRuntimesBySite = [];
 
     #[Flow\Inject]
     protected FusionService $fusionService;
 
     #[Flow\Inject]
     protected ContentRepositoryRegistry $contentRepositoryRegistry;
+
+    #[Flow\InjectConfiguration('http.baseUri', 'Neos.Flow')]
+    protected string|null $baseUri;
 
     /**
      * @var array
@@ -60,6 +74,9 @@ class FusionRenderingService
      */
     #[Flow\Inject]
     protected $logger;
+
+    #[Flow\Inject]
+    protected Bootstrap $bootstrap;
 
     /**
      * @var ThrowableStorageInterface
@@ -100,7 +117,7 @@ class FusionRenderingService
         }
 
         $site = $this->siteRepository->findSiteBySiteNode($currentSiteNode);
-        $fusionRuntime = $this->getFusionRuntime($site);
+        $fusionRuntime = $this->getFusionRuntime($site, $contentRepository);
 
         $dimensionSpacePoint = $node->dimensionSpacePoint;
         $languageDimensionId = new ContentDimensionId('language');
@@ -146,22 +163,46 @@ class FusionRenderingService
      * @throws FusionException
      * @throws Exception
      */
-    protected function getFusionRuntime(Site $site): FusionRuntime
+    protected function getFusionRuntime(Site $site, ContentRepository $contentRepository): FusionRuntime
     {
-        if ($this->fusionRuntime === null) {
+        $siteKey = $site->getNodeName()->value;
+
+        if (!array_key_exists($siteKey, $this->fusionRuntimesBySite)) {
             $fusionConfiguration = $this->fusionService->createFusionConfigurationFromSite(
                 $site,
             );
-            $this->fusionRuntime = $this->runtimeFactory->createFromConfiguration(
+            $fusionRuntime = $this->runtimeFactory->createFromConfiguration(
                 $fusionConfiguration,
-                FusionGlobals::createEmpty(),
+                FusionGlobals::fromArray([
+                    'renderingMode' => RenderingMode::createFrontend(),
+                    'request' => $this->getActionRequest($site, $contentRepository->id),
+                ]),
             );
 
             if (isset($this->options['enableContentCache']) && $this->options['enableContentCache'] !== null) {
-                $this->fusionRuntime->setEnableContentCache($this->options['enableContentCache']);
+                $fusionRuntime->setEnableContentCache($this->options['enableContentCache']);
             }
+            $this->fusionRuntimesBySite[$siteKey] = $fusionRuntime;
         }
+        return $this->fusionRuntimesBySite[$siteKey];
+    }
 
-        return $this->fusionRuntime;
+    /**
+     * Generate a valid request for the UriBuilder to work during rendering.
+     * If the site cannot provide a valid domain, the configured baseUri is used and if that is missing localhost.
+     */
+    protected function getActionRequest(
+        Site $site,
+        ContentRepositoryId $contentRepositoryId
+    ): ActionRequest {
+        // Generate a custom request when the current request was triggered from CLI
+        $domain = $site->getPrimaryDomain();
+        $fallbackUri = $this->baseUri ?: 'http://localhost';
+        $baseUri = $domain instanceof Domain ? (string)$domain : $fallbackUri;
+
+        $httpRequest = new ServerRequest('GET', $baseUri);
+        $httpRequest = SiteDetectionResult::create($site->getNodeName(), $contentRepositoryId)
+            ->storeInRequest($httpRequest);
+        return ActionRequest::fromHttpRequest($httpRequest);
     }
 }
